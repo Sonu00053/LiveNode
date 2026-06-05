@@ -1,34 +1,17 @@
-// const mysql = require('mysql2');
-// require('dotenv').config();
-// const databases = JSON.parse(process.env.DATABASES || '{}');
-// if (!Object.keys(databases).length) {
-//     throw new Error('DATABASES missing in .env');
-// }
-// const pools = {};
-// for (const [name, config] of Object.entries(databases)) {
-//     pools[name] = {
-//         db: mysql.createPool({
-//             host: config.host,
-//             user: config.user,
-//             password: config.password,
-//             database: config.database,
-//             port: config.port
-//         }),
-//         gasPk: config.gasPk,
-//         withdrawPk: config.Withdrawpk
-//     };
-//     console.log(`✅ Data Base Connectesd → ${name}`);
-
-// }
-// module.exports = { pools };
-
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const databases = JSON.parse(process.env.DATABASES || '{}');
+let databases = {};
+
+try {
+    databases = JSON.parse(process.env.DATABASES || '{}');
+} catch (err) {
+    console.error("❌ Invalid DATABASES JSON:", err.message);
+    databases = {};
+}
 
 if (!Object.keys(databases).length) {
-    throw new Error('DATABASES missing in .env');
+    console.warn('⚠️ DATABASES is empty or missing');
 }
 
 const pools = {};
@@ -41,13 +24,13 @@ async function initDB() {
                 user: config.user,
                 password: config.password,
                 database: config.database,
-                port: config.port,
+                port: config.port || 3306,
                 waitForConnections: true,
                 connectionLimit: 10,
                 queueLimit: 0,
             });
 
-            // REAL CONNECTION TEST
+            // test connection
             const conn = await pool.getConnection();
             await conn.ping();
             conn.release();
@@ -55,17 +38,18 @@ async function initDB() {
             pools[name] = {
                 db: pool,
                 gasPk: config.gasPk,
-                withdrawPk: config.withdrawPk, // FIXED
+                withdrawPk: config.withdrawPk,
             };
 
-            console.log(`✅ Database Connected Successfully → ${name}`);
+            console.log(`✅ DB Connected → ${name}`);
 
         } catch (err) {
-            console.error(`❌ DB Connection Failed → ${name}`, err.message);
+            console.error(`❌ DB Failed → ${name}:`, err.message);
         }
     }
 }
 
+// initialize immediately
 initDB();
 
-module.exports = { pools };
+module.exports = { pools, initDB };
