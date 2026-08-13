@@ -49,6 +49,8 @@ class Manage {
                         }
                     );
                 });
+                console.log(users);
+                console.log(`Found ${users.length} users without wallets in DB: ${name}`);
 
                 if (!users.length) continue;
 
@@ -60,21 +62,21 @@ class Manage {
                             const wallet = Wallet.createRandom();
                             const encryptedPrivateKey = Manage.encrypt(wallet.privateKey);
 
-                            // await new Promise((resolve, reject) => {
-                            //     UserModel.update(
-                            //         db,
-                            //         'tbl_users',
-                            //         { user_id: user.user_id },
-                            //         {
-                            //             wallet_address: wallet.address,
-                            //             wallet_private: encryptedPrivateKey
-                            //         },
-                            //         (err, result) => {
-                            //             if (err) return reject(err);
-                            //             resolve(result);
-                            //         }
-                            //     );
-                            // });
+                            await new Promise((resolve, reject) => {
+                                UserModel.update(
+                                    db,
+                                    'tbl_users',
+                                    { user_id: user.user_id },
+                                    {
+                                        wallet_address: wallet.address,
+                                        wallet_private: encryptedPrivateKey
+                                    },
+                                    (err, result) => {
+                                        if (err) return reject(err);
+                                        resolve(result);
+                                    }
+                                );
+                            });
 
                             totalCreated++;
                             console.log(`Wallet created: ${user.user_id}`);
