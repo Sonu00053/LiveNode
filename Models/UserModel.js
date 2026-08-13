@@ -158,6 +158,36 @@ class UserModel {
 
         return result;
     }
+    static get_single_record(db, table, condition = {}, fields = '*') {
+
+        return new Promise((resolve, reject) => {
+
+            if (!db || typeof db.query !== 'function') {
+                return reject(new Error('Invalid DB connection'));
+            }
+
+            let sql = `SELECT ${fields} FROM ${table}`;
+            let values = [];
+
+            if (condition && Object.keys(condition).length > 0) {
+
+                const whereClause = Object.keys(condition)
+                    .map(key => `${key} = ?`)
+                    .join(' AND ');
+
+                sql += ` WHERE ${whereClause}`;
+                values = Object.values(condition);
+            }
+
+            sql += ' LIMIT 1';
+
+            db.query(sql, values, (err, result) => {
+                if (err) return reject(err);
+                resolve(result && result[0] ? result[0] : null);
+            });
+        });
+    }
 }
+
 
 module.exports = UserModel;

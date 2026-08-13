@@ -33,18 +33,24 @@ async function Withdrawsuccess(req, res) {
             console.log(`\n===== DB: ${name} =====`);
 
             // ================= GET USERS =================
-            const users = await new Promise((resolve, reject) => {
-                UserModel.get_records(
-                    db,
-                    'tbl_withdraw',
-                    { admin_status: 1, status: 0 },
-                    '*',
-                    (err, result) => {
-                        if (err) return reject(err);
-                        resolve(result || []);
-                    }
-                );
-            });
+            // const users = await new Promise((resolve, reject) => {
+            //     UserModel.get_records(
+            //         db,
+            //         'tbl_withdraw',
+            //         { admin_status: 1, status: 0 },
+            //         '*',
+            //         (err, result) => {
+            //             if (err) return reject(err);
+            //             resolve(result || []);
+            //         }
+            //     );
+            // });
+             const [users] = await db.query(`
+                SELECT *
+                FROM tbl_withdraw
+                WHERE  admin_status = '1'
+                   AND status = '0'
+            `);
 
             if (!users.length) {
                 console.log('No withdrawals');

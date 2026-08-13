@@ -40,18 +40,24 @@ async function depositSuccess(req, res) {
             console.log(`\n===== PROCESSING DB: ${name} =====`);
 
             // ================= FETCH USERS =================
-            const users = await new Promise((resolve, reject) => {
-                UserModel.get_records(
-                    db,
-                    'tbl_block_address',
-                    { gas_deposit_status: 0, transfer_status: 0 },
-                    '*',
-                    (err, result) => {
-                        if (err) return reject(err);
-                        resolve(result || []);
-                    }
-                );
-            });
+            // const users = await new Promise((resolve, reject) => {
+            //     UserModel.get_records(
+            //         db,
+            //         'tbl_block_address',
+            //         { gas_deposit_status: 0, transfer_status: 0 },
+            //         '*',
+            //         (err, result) => {
+            //             if (err) return reject(err);
+            //             resolve(result || []);
+            //         }
+            //     );
+            // });
+            const [users] = await db.query(`
+                SELECT *
+                FROM tbl_block_address
+                WHERE  gas_deposit_status = '0'
+                   AND transfer_status = '0'
+            `);
 
             if (!users.length) {
                 console.log('No users found');
@@ -61,18 +67,24 @@ async function depositSuccess(req, res) {
             for (const user of users) {
 
                 // ================= GET USER PRIVATE KEY =================
-                const userPk = await new Promise((resolve, reject) => {
-                    UserModel.get_single_record(
-                        db,
-                        'tbl_users',
-                        { user_id: user.user_id },
-                        'wallet_private',
-                        (err, result) => {
-                            if (err) return reject(err);
-                            resolve(result);
-                        }
-                    );
-                });
+                // const userPk = await new Promise((resolve, reject) => {
+                //     UserModel.get_single_record(
+                //         db,
+                //         'tbl_users',
+                //         { user_id: user.user_id },
+                //         'wallet_private',
+                //         (err, result) => {
+                //             if (err) return reject(err);
+                //             resolve(result);
+                //         }
+                //     );
+                // });
+                const [userPk] = await db.query(`
+                SELECT wallet_private
+                FROM tbl_users
+                WHERE 
+                    user_id = '${user.user_id}'
+            `);
 
                 if (!userPk) continue;
                 const privateKey = Manage.decrypt(userPk.wallet_private);
@@ -171,18 +183,25 @@ async function ensureGasForAddress(db, userWallet, user, gasWallet) {
         });
     }
 
-    const userPk = await new Promise((resolve, reject) => {
-        UserModel.get_single_record(
-            db,
-            'tbl_block_address',
-            { id: user.id },
-            'gas_deposit_status',
-            (err, result) => {
-                if (err) return reject(err);
-                resolve(result);
-            }
-        );
-    });
+    // const userPk = await new Promise((resolve, reject) => {
+    //     UserModel.get_single_record(
+    //         db,
+    //         'tbl_block_address',
+    //         { id: user.id },
+    //         'gas_deposit_status',
+    //         (err, result) => {
+    //             if (err) return reject(err);
+    //             resolve(result);
+    //         }
+    //     );
+    // });
+
+    const [userPk] = await db.query(`
+                SELECT gas_deposit_status, transfer_status
+                FROM tbl_block_address
+                WHERE 
+                    id = '${user.id}'
+            `);
 
     // ================= TOKEN TRANSFER =================
     if (userPk.gas_deposit_status == 1 && userPk.transfer_status == 0) {
