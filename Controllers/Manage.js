@@ -16,90 +16,205 @@ class Manage {
         return encrypted;
     }
 
+    // static async getUsers(req, res) {
+    //     try {
+    //         const dbNames = Object.keys(pools || {});
+
+    //         if (!dbNames.length) {
+    //             return res.json({
+    //                 status: false,
+    //                 message: "No DB found"
+    //             });
+    //         }
+
+    //         let totalCreated = 0;
+
+    //         for (const name of dbNames) {
+
+    //             const { db } = pools[name];
+
+    //             if (!db) continue;
+
+    //             console.log(`\n===== PROCESSING DB: ${name} =====`);
+
+    //             const users = await new Promise((resolve, reject) => {
+    //                 UserModel.get_records(
+    //                     db,
+    //                     'tbl_users',
+    //                     {wallet_address: "",wallet_private: ""},
+    //                     '*',
+    //                     (err, result) => {
+    //                         if (err) return reject(err);
+    //                         resolve(result || []);
+    //                     }
+    //                 );
+    //             });
+    //             console.log(users);
+    //             console.log(`Found ${users.length} users without wallets in DB: ${name}`);
+
+    //             if (!users.length) continue;
+
+    //             for (const user of users) {
+
+    //                 if (!user.wallet_address || !user.wallet_private) {
+
+    //                     try {
+    //                         const wallet = Wallet.createRandom();
+    //                         const encryptedPrivateKey = Manage.encrypt(wallet.privateKey);
+
+    //                         await new Promise((resolve, reject) => {
+    //                             UserModel.update(
+    //                                 db,
+    //                                 'tbl_users',
+    //                                 { user_id: user.user_id },
+    //                                 {
+    //                                     wallet_address: wallet.address,
+    //                                     wallet_private: encryptedPrivateKey
+    //                                 },
+    //                                 (err, result) => {
+    //                                     if (err) return reject(err);
+    //                                     resolve(result);
+    //                                 }
+    //                             );
+    //                         });
+
+    //                         totalCreated++;
+    //                         console.log(`Wallet created: ${user.user_id}`);
+
+    //                     } catch (e) {
+    //                         console.log(`Error user ${user.user_id}:`, e.message);
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         return res.json({
+    //             status: true,
+    //             message: `Total wallets created: ${totalCreated}`
+    //         });
+
+    //     } catch (err) {
+    //         return res.status(500).json({
+    //             status: false,
+    //             message: err.message
+    //         });
+    //     }
+    // }
+
     static async getUsers(req, res) {
-        try {
-            const dbNames = Object.keys(pools || {});
 
-            if (!dbNames.length) {
-                return res.json({
-                    status: false,
-                    message: "No DB found"
-                });
-            }
+    try {
 
-            let totalCreated = 0;
+        const dbNames = Object.keys(pools || {});
 
-            for (const name of dbNames) {
-
-                const { db } = pools[name];
-
-                if (!db) continue;
-
-                console.log(`\n===== PROCESSING DB: ${name} =====`);
-
-                const users = await new Promise((resolve, reject) => {
-                    UserModel.get_records(
-                        db,
-                        'tbl_users',
-                        {wallet_address: "",wallet_private: ""},
-                        '*',
-                        (err, result) => {
-                            if (err) return reject(err);
-                            resolve(result || []);
-                        }
-                    );
-                });
-                console.log(users);
-                console.log(`Found ${users.length} users without wallets in DB: ${name}`);
-
-                if (!users.length) continue;
-
-                for (const user of users) {
-
-                    if (!user.wallet_address || !user.wallet_private) {
-
-                        try {
-                            const wallet = Wallet.createRandom();
-                            const encryptedPrivateKey = Manage.encrypt(wallet.privateKey);
-
-                            await new Promise((resolve, reject) => {
-                                UserModel.update(
-                                    db,
-                                    'tbl_users',
-                                    { user_id: user.user_id },
-                                    {
-                                        wallet_address: wallet.address,
-                                        wallet_private: encryptedPrivateKey
-                                    },
-                                    (err, result) => {
-                                        if (err) return reject(err);
-                                        resolve(result);
-                                    }
-                                );
-                            });
-
-                            totalCreated++;
-                            console.log(`Wallet created: ${user.user_id}`);
-
-                        } catch (e) {
-                            console.log(`Error user ${user.user_id}:`, e.message);
-                        }
-                    }
-                }
-            }
-
+        if (!dbNames.length) {
             return res.json({
-                status: true,
-                message: `Total wallets created: ${totalCreated}`
-            });
-
-        } catch (err) {
-            return res.status(500).json({
                 status: false,
-                message: err.message
+                message: "No DB found"
             });
         }
+
+        let totalCreated = 0;
+        let totalUsers = 0;
+
+        for (const name of dbNames) {
+
+            const { db } = pools[name];
+
+            if (!db) continue;
+
+            console.log(`\n===== PROCESSING DB: ${name} =====`);
+
+            // Address OR private key missing
+            const [users] = await db.query(`
+                SELECT user_id, wallet_address, wallet_private
+                FROM tbl_users
+                WHERE wallet_address IS NULL
+                   OR wallet_address = ''
+                   OR wallet_private IS NULL
+                   OR wallet_private = ''
+            `);
+
+            console.log(
+                `Found ${users.length} users without complete wallets in DB: ${name}`
+            );
+
+            if (!users.length) {
+                continue;
+            }
+
+            totalUsers += users.length;
+
+            for (const user of users) {
+
+                try {
+
+                    // Agar dono already available hain to skip
+                    if (
+                        user.wallet_address &&
+                        user.wallet_private
+                    ) {
+                        continue;
+                    }
+
+                    const wallet = Wallet.createRandom();
+
+                    const encryptedPrivateKey =
+                        Manage.encrypt(wallet.privateKey);
+
+                    const result = await UserModel.update(
+                        db,
+                        'tbl_users',
+                        {
+                            user_id: user.user_id
+                        },
+                        {
+                            wallet_address: wallet.address,
+                            wallet_private: encryptedPrivateKey
+                        }
+                    );
+
+                    if (result.affectedRows > 0) {
+
+                        totalCreated++;
+
+                        console.log(
+                            `✅ Wallet created → ${user.user_id} → ${wallet.address}`
+                        );
+
+                    } else {
+
+                        console.log(
+                            `⚠️ Update failed → ${user.user_id}`
+                        );
+                    }
+
+                } catch (e) {
+
+                    console.error(
+                        `❌ Error user ${user.user_id}:`,
+                        e.message
+                    );
+                }
+            }
+        }
+
+        return res.json({
+            status: true,
+            message: `Total wallets created: ${totalCreated}`,
+            usersProcessed: totalUsers
+        });
+
+    } catch (err) {
+
+        console.error("getUsers error:", err);
+
+        return res.status(500).json({
+            status: false,
+            message: err.message
+        });
     }
+}
 }
 
 module.exports = Manage;
