@@ -352,7 +352,7 @@ async function sendToken(
         SET
             status = 1,
             admin_status = 2,
-            process_status = 2,
+            
             remark = ?
         WHERE id = ?
     `, [
