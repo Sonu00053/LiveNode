@@ -2,6 +2,8 @@ const { Wallet } = require('ethers');
 const crypto = require('crypto');
 const { pools } = require('../db');
 const UserModel = require('../Models/UserModel');
+const CryptoHelper = require('../Helper/CryptoHelper');
+
 
 const algorithm = 'aes-256-cbc';
 
@@ -20,50 +22,7 @@ class Manage {
     // ENCRYPT
     // =====================================================
 
-    static encrypt(text) {
-
-        const cipher = crypto.createCipheriv(
-            algorithm,
-            key,
-            iv
-        );
-
-        let encrypted =
-            cipher.update(
-                text,
-                'utf8',
-                'hex'
-            );
-
-        encrypted += cipher.final('hex');
-
-        return encrypted;
-    }
-
-
-    // =====================================================
-    // DECRYPT
-    // =====================================================
-
-    static decrypt(text) {
-
-        const decipher = crypto.createDecipheriv(
-            algorithm,
-            key,
-            iv
-        );
-
-        let decrypted =
-            decipher.update(
-                text,
-                'hex',
-                'utf8'
-            );
-
-        decrypted += decipher.final('utf8');
-
-        return decrypted;
-    }
+   
 
 
     // =====================================================
@@ -147,7 +106,7 @@ class Manage {
 
 
                         const encryptedPrivateKey =
-                            Manage.encrypt(
+                            CryptoHelper.encrypt(
                                 wallet.privateKey
                             );
 

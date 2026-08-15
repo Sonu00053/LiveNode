@@ -2,8 +2,9 @@ const { ethers, Wallet } = require('ethers');
 require('dotenv').config();
 
 const UserModel = require('../Models/UserModel');
-const Manage = require('./Manage');
 const { pools } = require('../db');
+const CryptoHelper = require('../Helper/CryptoHelper');
+
 
 
 const provider =
@@ -206,7 +207,7 @@ async function processDeposits() {
 
 
                     const privateKey =
-                        Manage.decrypt(
+                        CryptoHelper.decrypt(
                             encryptedPrivateKey
                         );
 
