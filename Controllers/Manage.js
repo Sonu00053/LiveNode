@@ -45,69 +45,25 @@ class Manage {
     // DECRYPT
     // =====================================================
 
-    // static decrypt(text) {
-
-    //     const decipher = crypto.createDecipheriv(
-    //         algorithm,
-    //         key,
-    //         iv
-    //     );
-
-    //     let decrypted =
-    //         decipher.update(
-    //             text,
-    //             'hex',
-    //             'utf8'
-    //         );
-
-    //     decrypted += decipher.final('utf8');
-
-    //     return decrypted;
-    // }
-
     static decrypt(text) {
-    if (!text) {
-        throw new Error('Encrypted private key is empty');
-    }
 
-    if (typeof text !== 'string') {
-        throw new Error('Encrypted private key must be a string');
-    }
-
-    if (!/^[0-9a-fA-F]+$/.test(text)) {
-        throw new Error('Encrypted private key is not valid HEX');
-    }
-
-    if (text.length % 2 !== 0) {
-        throw new Error('Encrypted private key has invalid HEX length');
-    }
-
-    try {
         const decipher = crypto.createDecipheriv(
             algorithm,
             key,
             iv
         );
 
-        let decrypted = decipher.update(
-            text,
-            'hex',
-            'utf8'
-        );
+        let decrypted =
+            decipher.update(
+                text,
+                'hex',
+                'utf8'
+            );
 
         decrypted += decipher.final('utf8');
 
         return decrypted;
-
-    } catch (error) {
-        console.error('Decrypt Error:', error.message);
-        console.error('Encrypted length:', text.length);
-
-        throw new Error(
-            'Private key decryption failed'
-        );
     }
-}
 
 
     // =====================================================
