@@ -138,25 +138,24 @@ async function processWithdrawals() {
                     // LOCK WITHDRAWAL
                     // =============================================
 
-                    const [lock] =
-                        await db.query(`
-                            UPDATE tbl_withdraw
-                            SET process_status = 1
-                            WHERE id = ?
-                              AND admin_status = 1
-                              AND status = 0
-                              AND process_status = 0
-                        `, [user.id]);
+                    // const [lock] =
+                    //     await db.query(`
+                    //         UPDATE tbl_withdraw
+                    //         SET process_status = 1
+                    //         WHERE id = ?
+                    //           AND admin_status = 1
+                    //           AND status = 0
+                    //     `, [user.id]);
 
 
-                    if (lock.affectedRows === 0) {
+                    // if (lock.affectedRows === 0) {
 
-                        console.log(
-                            `Already processing → ${user.id}`
-                        );
+                    //     console.log(
+                    //         `Already processing → ${user.id}`
+                    //     );
 
-                        continue;
-                    }
+                    //     continue;
+                    // }
 
 
                     totalProcessed++;
