@@ -4,6 +4,8 @@ const app = express();
 const routes = require('./routes');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
+require('./cron');
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
