@@ -39,6 +39,7 @@ async function initDB() {
                 db: pool,
                 gasPk: config.gasPk,
                 withdrawPk: config.withdrawPk,
+                reciever_wallet: config.reciever_wallet,
             };
 
             console.log(`✅ DB Connected → ${name}`);
