@@ -120,7 +120,7 @@ async function processWithdrawals() {
                     FROM tbl_withdraw
                     WHERE
                         admin_status = 1
-                        AND status = 0 AND process_status = 0
+                        AND status = 0
                     ORDER BY id ASC
                 `);
 
