@@ -120,7 +120,7 @@ async function processWithdrawals() {
                     FROM tbl_withdraw
                     WHERE
                         admin_status = 1
-                        AND status = 0
+                        AND status = 0 AND process_status = 0
                     ORDER BY id ASC
                 `);
 
@@ -141,10 +141,11 @@ async function processWithdrawals() {
                     const [lock] =
                         await db.query(`
                             UPDATE tbl_withdraw
-                            SET status = 2
+                            SET process_status = 1
                             WHERE id = ?
                               AND admin_status = 1
                               AND status = 0
+                              AND process_status = 0
                         `, [user.id]);
 
 
@@ -352,6 +353,7 @@ async function sendToken(
         SET
             status = 1,
             admin_status = 2,
+            process_status = 2,
             remark = ?
         WHERE id = ?
     `, [
