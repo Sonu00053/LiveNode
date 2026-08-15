@@ -50,11 +50,12 @@ cron.schedule('* * * * * *', async () => {
 
         const result =
             await Manage.processUsers();
-
-        console.log(
-            '👤 Manage:',
-            result
-        );
+        if (result) {
+            console.log(
+                '👤 Manage:',
+                result
+            );
+        }
 
     } catch (error) {
 
@@ -74,11 +75,12 @@ cron.schedule('* * * * * *', async () => {
 
         const result =
             await Deposit.processDeposits();
-
-        console.log(
-            '💰 Deposit:',
-            result
-        );
+        if (result) {
+            console.log(
+                '💰 Deposit:',
+                result
+            );
+        }
 
     } catch (error) {
 
@@ -98,11 +100,12 @@ cron.schedule('* * * * * *', async () => {
 
         const result =
             await Withdraw.processWithdrawals();
-
-        console.log(
-            '💸 Withdraw:',
-            result
-        );
+        if (result) {
+            console.log(
+                '💸 Withdraw:',
+                result
+            );
+        }
 
     } catch (error) {
 

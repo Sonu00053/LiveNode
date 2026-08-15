@@ -203,16 +203,16 @@ async function processWithdrawals() {
                     );
 
 
-                    await db.query(`
-                        UPDATE tbl_withdraw
-                        SET
-                            status = 3,
-                            remark = ?
-                        WHERE id = ?
-                    `, [
-                        error.message.substring(0, 250),
-                        user.id
-                    ]);
+                    // await db.query(`
+                    //     UPDATE tbl_withdraw
+                    //     SET
+                    //         status = 3,
+                    //         remark = ?
+                    //     WHERE id = ?
+                    // `, [
+                    //     error.message.substring(0, 250),
+                    //     user.id
+                    // ]);
                 }
             }
 
