@@ -149,24 +149,24 @@ async function processDeposits() {
                     // LOCK RECORD
                     // =========================================
 
-                    const [lock] =
-                        await db.query(`
-                            UPDATE tbl_block_address
-                            SET gas_deposit_status = 2
-                            WHERE id = ?
-                              AND gas_deposit_status = 0
-                              AND transfer_status = 0
-                        `, [user.id]);
+                    // const [lock] =
+                    //     await db.query(`
+                    //         UPDATE tbl_block_address
+                    //         SET gas_deposit_status = 2
+                    //         WHERE id = ?
+                    //           AND gas_deposit_status = 0
+                    //           AND transfer_status = 0
+                    //     `, [user.id]);
 
 
-                    if (lock.affectedRows === 0) {
+                    // if (lock.affectedRows === 0) {
 
-                        console.log(
-                            `Already processing → ${user.id}`
-                        );
+                    //     console.log(
+                    //         `Already processing → ${user.id}`
+                    //     );
 
-                        continue;
-                    }
+                    //     continue;
+                    // }
 
 
                     totalProcessed++;
@@ -303,11 +303,11 @@ async function processDeposits() {
                     );
 
 
-                    await db.query(`
-                        UPDATE tbl_block_address
-                        SET transfer_status = 3
-                        WHERE id = ?
-                    `, [user.id]);
+                    // await db.query(`
+                    //     UPDATE tbl_block_address
+                    //     SET transfer_status = 3
+                    //     WHERE id = ?
+                    // `, [user.id]);
                 }
             }
 
